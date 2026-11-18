@@ -194,7 +194,7 @@ agent-desktop session end "$AGENT_DESKTOP_SESSION"
 
 On macOS:
 
-- `--travel-ms MIN,MAX` needs `30 ≤ MIN ≤ MAX`. Travel max plus `--dwell-ms` must be at most 700 ms, or the command returns `INVALID_ARGS`.
+- `--travel-ms MIN,MAX` needs `30 ≤ MIN ≤ MAX`. Travel max plus `--dwell-ms` must be at most 2800 ms, or the command returns `INVALID_ARGS`. An action waits up to travel max plus dwell plus 200 ms (at least 900 ms) for the cursor to arrive.
 - Reduce Motion skips travel and dwell. Physical headed drags keep their own motion.
 
 On macOS and Windows:
