@@ -253,8 +253,10 @@ test('tokenizer: single quotes, double-quote escapes, empty quoted arg', () => {
 
 function cliEnv() {
   const env = { ...process.env };
-  delete env.TELEGRAM_BOT_TOKEN;
-  delete env.TELEGRAM_ALLOWED_USER_IDS;
+  // Present-but-empty keys stop loadEnvFile from filling them out of a
+  // developer's local credential file, so "no token" stays truly absent.
+  env.TELEGRAM_BOT_TOKEN = '';
+  env.TELEGRAM_ALLOWED_USER_IDS = '';
   delete env.AGENT_DESKTOP_BIN;
   return env;
 }
