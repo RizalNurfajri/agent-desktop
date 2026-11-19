@@ -9,6 +9,6 @@
     "agent-desktop-telegram-bridge": "bridge.mjs"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.12"
   }
 }

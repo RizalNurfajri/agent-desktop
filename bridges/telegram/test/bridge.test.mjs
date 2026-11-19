@@ -6,7 +6,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createBridge, parseConfig, resolveBinary, tokenize } from '../bridge.mjs';
+import { createBridge, loadEnvFiles, parseConfig, resolveBinary, tokenize } from '../bridge.mjs';
 
 const BRIDGE_PATH = fileURLToPath(new URL('../bridge.mjs', import.meta.url));
 const TOKEN = '123456:TEST-TOKEN-SECRET';
@@ -194,6 +194,27 @@ test('empty stdout replies with the stderr excerpt', async () => {
   const replies = t.sends('sendMessage');
   assert.equal(replies.length, 1);
   assert.match(replies[0].body.text, /boom: detail/);
+});
+
+test('env file: loads values, real env keeps precedence, missing file tolerated', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'bridge-env-'));
+  const file = join(dir, 'config-fixture');
+  writeFileSync(file, 'TELEGRAM_BOT_TOKEN=file-token\nTELEGRAM_ALLOWED_USER_IDS="7, 8"\n');
+  const saved = { ...process.env };
+  try {
+    delete process.env.TELEGRAM_BOT_TOKEN;
+    process.env.TELEGRAM_ALLOWED_USER_IDS = '99';
+    loadEnvFiles([join(dir, 'absent'), file]);
+    assert.equal(process.env.TELEGRAM_BOT_TOKEN, 'file-token');
+    assert.equal(process.env.TELEGRAM_ALLOWED_USER_IDS, '99');
+    const config = parseConfig([]);
+    assert.equal(config.token, 'file-token');
+    assert.deepEqual([...config.allow], [99]);
+  } finally {
+    for (const key of Object.keys(process.env)) if (!(key in saved)) delete process.env[key];
+    Object.assign(process.env, saved);
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('config: env fallbacks, id splitting, and flag override', () => {

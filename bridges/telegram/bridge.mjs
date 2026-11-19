@@ -5,9 +5,9 @@
 
 import { spawn as nodeSpawn, execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
-import { basename, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import process from 'node:process';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const API_ROOT = 'https://api.telegram.org/bot';
 const POLL_TIMEOUT_S = 25;
@@ -28,6 +28,10 @@ Options:
                    default: the npm global install for this platform/arch)
   --help           Show this help
 
+Config can also live in a .env file (current directory or next to bridge.mjs):
+  TELEGRAM_BOT_TOKEN=...  TELEGRAM_ALLOWED_USER_IDS=...  AGENT_DESKTOP_BIN=...
+Flags win over environment variables, which win over .env values.
+
 Chat commands:
   /id              Reply with your numeric Telegram user id (open to anyone)
   /start, /help    Short usage (whitelisted users only)
@@ -37,6 +41,12 @@ There is no open mode: a token and at least one allowed id are required.
 `;
 
 const CHAT_HELP = 'Send an agent-desktop command, e.g. snapshot --app brave -i --compact\n/id shows your numeric user id.';
+
+export function loadEnvFiles(paths) {
+  for (const path of paths) {
+    try { process.loadEnvFile(path); } catch (err) { if (err.code !== 'ENOENT') throw err; }
+  }
+}
 
 export function parseConfig(argv, env = process.env) {
   const flags = { allow: [] };
@@ -289,6 +299,7 @@ export function createBridge({
 }
 
 async function main(argv) {
+  loadEnvFiles([resolve('.env'), join(dirname(fileURLToPath(import.meta.url)), '.env')]);
   let config;
   try {
     config = parseConfig(argv);

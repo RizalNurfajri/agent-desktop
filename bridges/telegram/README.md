@@ -1,6 +1,6 @@
 # agent-desktop Telegram bridge
 
-A single-file Node.js bridge (zero npm dependencies, Node >= 20) that lets whitelisted
+A single-file Node.js bridge (zero npm dependencies, Node >= 20.12) that lets whitelisted
 Telegram users run the local [agent-desktop](https://github.com/vercel-labs/agent-desktop)
 CLI from chat. A message like `snapshot --app brave -i --compact` is spawned as
 `agent-desktop snapshot --app brave -i --compact` (no shell), and the JSON envelope is
@@ -37,6 +37,28 @@ that saved a file (`data.path`) arrives as a photo.
 
 Environment fallbacks (flags win): `TELEGRAM_BOT_TOKEN`,
 `TELEGRAM_ALLOWED_USER_IDS` (comma or space separated), `AGENT_DESKTOP_BIN`.
+
+### .env style
+
+Instead of flags or exported variables, put the config in a `.env` file — either in the
+directory you run from or next to `bridge.mjs` (`bridges/telegram/.env`):
+
+```dotenv
+TELEGRAM_BOT_TOKEN=123456:ABC-your-bot-token
+TELEGRAM_ALLOWED_USER_IDS=123456789
+# optional: AGENT_DESKTOP_BIN=C:\path\to\agent-desktop.exe
+```
+
+Then just run:
+
+```powershell
+node bridges/telegram/bridge.mjs
+```
+
+The bridge loads it natively via `process.loadEnvFile` (no dotenv dependency).
+Precedence: flags > real environment variables > `.env`. Keep `.env` out of git —
+`bridges/telegram/.gitignore` already excludes it.
+
 Without `--bin`/env the bridge resolves the npm global install for this platform/arch
 (`%APPDATA%\npm\node_modules` on Windows, `npm root -g` or standard prefixes on Unix).
 Startup fails with exit code 2 if the token is missing, the allowlist is empty, or the
