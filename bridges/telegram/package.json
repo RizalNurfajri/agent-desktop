@@ -1,0 +1,14 @@
+{
+  "name": "agent-desktop-telegram-bridge",
+  "version": "0.1.0",
+  "description": "Telegram bridge for the agent-desktop CLI: whitelisted users run commands, JSON results return to chat.",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "agent-desktop-telegram-bridge": "bridge.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
